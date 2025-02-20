@@ -58,3 +58,35 @@ spec:
         python -m pip install --upgrade pip wheel
         pip install -r requirements.txt
         nosetests $(params.args)
+
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: flake8-linting
+spec:
+  workspaces:
+    - name: source
+  steps:
+    - name: flake8
+      image: python:3.9-slim  # Ou uma imagem com o flake8 pré-instalado
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/bash
+        set -e
+
+        # Cria e ativa um ambiente virtual
+        python3 -m venv .venv
+        source .venv/bin/activate
+
+        # Atualiza o pip dentro do ambiente virtual
+        python -m pip install --upgrade pip
+
+        # Instala o flake8
+        pip install flake8
+
+        # Executa o flake8 (corrija as linhas longas no seu código!)
+        flake8 .  # Ou flake8 . --ignore=E501 se precisar ignorar temporariamente
+
+        # Desativa o ambiente virtual (boa prática)
+        deactivate
